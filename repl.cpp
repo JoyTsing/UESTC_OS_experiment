@@ -201,7 +201,7 @@ void command_print(commands c){
 
 int main(int argc,char* argv[])
 {
-    puts("Shell version 0.0.0.1,input 'help' to know more");
+    puts("Shell version 0.0.1.0,input 'help' to know more");
     puts("press Ctrl+c or input exit to quit\n");
     while(1){
         char* input=readline("sh> ");
