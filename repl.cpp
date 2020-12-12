@@ -1,7 +1,7 @@
 #include "./prm.hpp"
 #include "./pmMange.hpp"
-#ifdef _WIN32
 
+#ifdef _WIN32
 static char buffer[2048];
 char* readline(char* prompt){
     fputs(prompt,stdout);
@@ -55,7 +55,7 @@ void errMsg(const char* fmt,...){
 
 #define SASSERT_INIT()\
     SASSERT(0,hava_init==true,\
-            "init尚未执行\n")
+            "init not executed\n")
 
 
 void com_help();
@@ -176,7 +176,7 @@ void com_help(){
     printf(" req <resource name> <# of units> :resource.\n");
     printf(" rel <resource name> <# of units> :release resource.\n");
     printf(" to :timeout\n");
-    printf("查看进程状态和资源状态：\n");
+    printf("Look for processes status and resources status：\n");
     printf(" list pr :list all processes and their status.\n");
     printf(" list res :list all resource's state.\n");
     printf(" list ready :list all ready processes\n");
