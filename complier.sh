@@ -3,5 +3,5 @@ if [[ "$OSTYPE" =~ ^linux  ]];then
     exit 0
 fi
 #如果是Windows下
-g++ $filename -o osShell
+g++ ./repl.cpp -o osShell
 exit 0
