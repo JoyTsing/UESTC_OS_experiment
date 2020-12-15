@@ -114,7 +114,6 @@ bool in_resource(PCB* p,char* rid){
     return false;
 }
 
-//不检测安全性 默认传入参数均有效
 Resource* get_resource(PCB* p,char* rid){
     if(p==NULL||rid==NULL)
         return NULL;
