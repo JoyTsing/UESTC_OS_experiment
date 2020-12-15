@@ -1,11 +1,12 @@
 #include "./prm.hpp"
 #include "./pmMange.hpp"
 
+#define BUFFER 2048
 #ifdef _WIN32
-static char buffer[2048];
+static char buffer[BUFFER];
 char* readline(char* prompt){
     fputs(prompt,stdout);
-    fgets(buffer,2048,stdin);
+    fgets(buffer,BUFFER,stdin);
     char* cpy=(char*)malloc(strlen(buffer)+1);
     strcpy(cpy,buffer);
     cpy[strlen(cpy)-1]='\0';
@@ -57,8 +58,13 @@ void errMsg(const char* fmt,...){
     SASSERT(0,hava_init==true,\
             "init not executed\n")
 
+#define READY_QUIT(input)\
+    if(strcmp(input,"exit")==0){\
+        return 0;\
+}
 
 void com_help();
+void builtin_load(char*);
 
 commands handle(char* msg){
     if(msg==NULL||strcmp(msg," ")==0||strcmp(msg,"\n")==0
@@ -82,14 +88,19 @@ commands handle(char* msg){
         com_help();
         return HELP;
     }
-    if(strcmp(token,"init")==0){
+    else if(strcmp(token,"load")==0){
+        SASSERT_NUM("load",parNum,1);
+        builtin_load(arg[0]);
+        return LOAD;
+    }
+    else if(strcmp(token,"init")==0){
         SASSERT_NUM("init",parNum,0);
         pm->init();
         hava_init=true;
         printf("%s process is running\n",pm->current->pid);
         return CINIT;
     }
-    if(strcmp(token,"cr")==0){
+    else if(strcmp(token,"cr")==0){
         SASSERT_NUM("cr",parNum,2);
         SASSERT_INIT();
         switch(atoi(arg[1])){
@@ -102,7 +113,7 @@ commands handle(char* msg){
             printf("process %s is running.\n",pm->current->pid);
         return CR;
     }
-    if(strcmp(token,"de")==0){
+    else if(strcmp(token,"de")==0){
         SASSERT_NUM("de",parNum,1);
         SASSERT_INIT();
         if(strcmp("init",arg[0])==0){
@@ -113,7 +124,7 @@ commands handle(char* msg){
         printf("delete success,now process %s running\n",pm->current->pid);
         return DE;
     }
-    if(strcmp(token,"req")==0){
+    else if(strcmp(token,"req")==0){
         SASSERT_NUM("req",parNum,2);
         SASSERT_INIT();
         char* ret=pm->request(arg[0],atoi(arg[1]));
@@ -127,14 +138,14 @@ commands handle(char* msg){
         }
         return REQ;
     }
-    if(strcmp(token,"rel")==0){
+    else if(strcmp(token,"rel")==0){
         SASSERT_NUM("rel",parNum,2);
         SASSERT_INIT();
         if(pm->release(pm->current->pid,arg[0],atoi(arg[1])))
             pm->ProcessInfo(pm->current->pid);
         return REL;
     }
-    if(strcmp(token,"to")==0){
+    else if(strcmp(token,"to")==0){
         SASSERT_NUM("to",parNum,0);
         SASSERT_INIT();
         char* r=pm->timeout();
@@ -144,7 +155,7 @@ commands handle(char* msg){
         printf("\n");
         return TO;
     }
-    if(strcmp(token,"list")==0){
+    else if(strcmp(token,"list")==0){
         SASSERT_NUM("list's command",parNum,1);
         SASSERT_INIT();
         if(strcmp(arg[0],"pr")==0){
@@ -159,7 +170,7 @@ commands handle(char* msg){
             return PARSE_ERR;
         return LIST;
     }
-    if(strcmp(token,"pr")==0){
+    else if(strcmp(token,"pr")==0){
         SASSERT_NUM("pr",parNum,1);
         SASSERT_INIT();
         pm->ProcessInfo(arg[0]);
@@ -168,9 +179,11 @@ commands handle(char* msg){
     return  PARSE_ERR;
 }
 
+
 void com_help(){
     printf("Usage\n");
-    printf(" init :boot\n");
+    printf(" load <filename> :load commands from file,such as:test.txt\n");
+    printf(" init :boot to start\n");
     printf(" cr <name> <priority> :create process priority only 1 or 2.\n");
     printf(" de <name> :delete process.\n");
     printf(" req <resource name> <# of units> :resource.\n");
@@ -193,24 +206,49 @@ void command_print(commands c){
         case REQ:
         case REL:
         case TO:
+        case LOAD:
         case LIST:
         case PR:break;
         default:printf("Parse Error\n");
     }
 }
 
+void builtin_load(char* filename){
+    char buf[BUFFER];
+    FILE* fp;
+    if((fp=fopen(filename,"r"))==NULL){
+        printf("File %s Not existed\n",filename);
+        return;
+    }
+    while(fgets(buf,BUFFER,fp)!=NULL){
+        buf[strlen(buf)-1]='\0';
+        command_print(handle(buf));
+        memset(buf,0,sizeof(buf));
+    }
+    return;
+}
+
 int main(int argc,char* argv[])
 {
     puts("Shell version 0.0.1.0,input 'help' to know more");
     puts("press Ctrl+c or input exit to quit\n");
-    while(1){
-        char* input=readline("sh> ");
-        if(strcmp(input,"exit")==0){
-            return 0;
-        }
-        add_history(input);
-        command_print(handle(input));
-        free(input);
+    switch(argc){
+        case 1:
+            while(1){
+                char* input=readline("sh> ");
+                READY_QUIT(input);
+                add_history(input);
+                command_print(handle(input));
+                free(input);
+            }
+            break;
+        case 2:
+            printf("Load file: %s\n\n",argv[1]);
+            builtin_load(argv[1]);
+            break;
+        default:
+            printf("Usage: %s <filename>",argv[0]);
+            break;
     }
     return 0;
 }

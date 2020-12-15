@@ -15,6 +15,7 @@ typedef enum commands{
     CR,DE,REQ,REL,TO,
     LIST,
     PR,
+    LOAD,
     PARSE_ERR
 }commands;
 

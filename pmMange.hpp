@@ -95,12 +95,14 @@ bool pmMange::create(char* name,int p){
 }
 
 void pmMange::listProcess(){
+    printf(">Process List\n");
     for(auto i:pcb){
         printf(" * pid: <%s> | state: <%s> \n",i->pid,char_status(i->status));
     }
 }
 
 void pmMange::listResource(){
+    printf(">Resource List\n");
     for(auto i:rcb){
         printf(" * rid: <%s> | resource: %d / %d \n",i->rid,i->status,i->max);
     }
@@ -161,7 +163,7 @@ char* pmMange::request(char* rid,int unit){
     char* npid=current->pid;
     RCB* r=search_rcb(rid);
     if(unit>r->max){
-        printf("Too many request for %s,max is %d\n",rid,r->max);
+        printf("Too many resource request for %s,max is %d\n",rid,r->max);
         return NULL;
     }
     if(!in_resource(current,rid)){
@@ -280,22 +282,24 @@ void pmMange::destroy(char* pid){
 }
 
 void pmMange::printReady(){
-    for(int i=0;i<3;i++){
+    printf("Ready List\n");
+    for(int i=2;i>=0;i--){
         printf("* %s:\n",char_priority(priority(i)));
-        printf(" >");
+        printf(" > ");
         for(auto i:readyList[i]){
             printf("%s ",i->pid);
         }
-        printf("\n");
+        fputc('\n',stdout);
     }
 }
 
 void pmMange::printfBlock(){
+    printf("Block List\n");
     for(auto i:rcb){
         printf("* %s:",i->rid);
         for(auto j:*(i->waitList)){
             printf(" %s",j);
         }
-        printf("\n");
+        fputc('\n',stdout);
     }
 }
