@@ -20,7 +20,7 @@ public:
     bool release(char*pid ,char* rid,int unit);
     void listResource();
     char* timeout();//返回之前的进程pid
-
+    void delete_parent(char* pid);
     void printReady();
     void printfBlock();
 private:
@@ -30,6 +30,7 @@ private:
     PCB* search(char* pid);
     RCB* search_rcb(char* rcb);
     bool is_blocked(char* pid);
+
 };
 
 
@@ -256,7 +257,7 @@ void pmMange::destroy(char* pid){
         printf("process %s not exist\n",pid);
         return;
     }
-    p->parent->children->remove(p);
+
     for(auto res:*(p->resource)){
         release(p->pid,res->rid,res->occNum);
     }
@@ -270,11 +271,8 @@ void pmMange::destroy(char* pid){
     }
 
     for(auto it=p->children->begin();it!=p->children->end();){
-        if(strcmp((*it)->parent->pid,p->pid)==0){
-            destroy((*it)->pid);
-            it=p->children->erase(it);
-        }else
-            it++;
+        destroy((*it)->pid);
+        it=p->children->erase(it);
     }
     del_pcb(p);
     pcb.remove(p);
@@ -302,4 +300,12 @@ void pmMange::printfBlock(){
         }
         fputc('\n',stdout);
     }
+}
+
+//必须保证只执行一次 否则会报错
+void pmMange::delete_parent(char *pid) {
+    PCB* p=search(pid);
+    if(p==NULL)
+      return;
+    p->parent->children->remove(p);
 }

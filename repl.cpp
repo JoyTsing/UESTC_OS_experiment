@@ -120,6 +120,7 @@ commands handle(char* msg){
             printf("init can't be destroy\n");
             return DE;
         }
+        pm->delete_parent(arg[0]);
         pm->destroy(arg[0]);
         printf("delete success,now process %s running\n",pm->current->pid);
         return DE;
